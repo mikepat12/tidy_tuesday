@@ -245,10 +245,9 @@ tech %>%
 
 
 
-
-
-
-
+###########################################################################################
+### Cool graphs from others
+###########################################################################################
 
 
 
@@ -271,12 +270,126 @@ tech %>%
 
 
 
+###########################################################################################
 
+USA_vaccine <- technology %>%
+    filter(category == "Vaccines") %>%
+    filter(label != "Extracorporeal shock wave lithotripters") %>%
+    filter(variable != "Hib3") %>%
+    filter(variable != "MCV2") %>%
+    filter(variable != "HepB3") %>%
+    filter(variable != "IPV1") %>%
+    filter(variable != "PCV3") %>%
+    filter(variable != "RotaC") %>%
+    filter(variable != "pctimmunizmeas") %>%
+    filter(iso3c == "USA") %>%
+    group_by(iso3c, year, variable) %>%
+    summarize(n = mean(value))
+USA_vaccine$variable <- str_replace(USA_vaccine$variable, "MCV1", "Measles")
+USA_vaccine$variable <- str_replace(USA_vaccine$variable, "RCV1", "Rubella")
+USA_vaccine$variable <- str_replace(USA_vaccine$variable, "Pol3", "Polio")
+USA_vaccine$n <- USA_vaccine$n/100
+ggplot(USA_vaccine, aes(x = year, y = n)) +
+    geom_line() +
+    geom_point(size = 0.5) +
+    facet_wrap(~variable) +
+    geom_vline(xintercept = 1998, color = "red") +
+    geom_text(data = data.frame(x = 1999,
+                                y = 0.85,
+                                variable = "DPT",
+                                label = "1998: \nLancet MMR paper is published"),
+              aes(x = x, y = y, label = label), 
+              size = 2, 
+              hjust = 0,
+              fontface = "italic") +
+    ylab("Number of Flights") +
+    labs(title = "Percent of Children who Received Immunizations in the U.S.",
+         subtitle = "Strong convergence in use of consumption technologies, like vaccines, compared to production technologies, indicates increasing quality of life. \nDespite a deeply controversial paper linking vaccines to autism, vaccine rates nationwide have not greatly changed in the past decade.",
+         caption = "Source: data.nber.org | github: julia-tache | July 25th, 2022") +
+    theme(panel.background = element_rect(fill = "#E4FDE1"),
+          plot.background = element_rect(fill = "#F3EAAF"),
+          strip.background = element_rect(fill = "#648381"),
+          strip.text = element_text(colour = 'white'),
+          panel.grid.major.x = element_blank(),
+          panel.grid.minor.x = element_blank(),
+          panel.grid.minor.y = element_blank(),
+          legend.position = "none",
+          plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+          plot.subtitle = element_text(hjust = 0.5, size = 7, face = "italic"),
+          plot.caption = element_text(hjust = 0.5),
+          axis.title.x = element_blank(),
+          axis.title.y = element_blank()) +
+    scale_x_continuous(breaks = round(seq(min(USA_vaccine$year), max(USA_vaccine$year), by = 5), 1)) +
+    scale_y_continuous(breaks = pretty_breaks(5),
+                       labels = percent)
 
+###########################################################################################
 
+library(dplyr)
+library(reactable)
+library(reactablefmtr)
 
+x <- 
+    tech |> 
+    filter(
+        iso3c == "MEX"
+        & stringr::str_detect(label, "Electricity|electric energy")
+    ) |> 
+    select(!variable) |> 
+    pivot_wider(
+        names_from = label,
+        values_from = value
+    ) |> 
+    select(-one_of("Electricity Generating Capacity, 1000 kilowatts", "iso3c",
+                   "group", "category"
+    )) |> 
+    filter(year >= 1995) |> 
+    rename(Period = year) 
 
-
-
+x |> 
+    reactable(
+        theme = nytimes(centered = TRUE, font_color = '#666666'),
+        defaultColDef = colDef(format = colFormat(digits = 2)),
+        highlight = TRUE,
+        defaultPageSize = 18,
+        columns = list(
+            #`Gross output of electric energy (TWH)` = colDef(name = "Total production of energy")
+            Period = colDef(format = colFormat(digits = 0), align = "left"),
+            `Gross output of electric energy (TWH)` = colDef(
+                align = 'left',
+                minWidth = 250,
+                cell = data_bars(
+                    data = x,
+                    fill_color = viridis::viridis(5),
+                    background = '#FFFFFF',
+                    bar_height = 4,
+                    number_fmt = scales::comma,
+                    text_position = 'outside-end',
+                    max_value = 400,
+                    icon = 'circle',
+                    #icon_color = '#226ab2',
+                    icon_size = 15,
+                    text_color = '#226ab2',
+                    round_edges = TRUE
+                )
+            ),
+            `Electricity from oil (TWH)` = colDef(
+                cell =  color_tiles(x, bias = 1.4, box_shadow = TRUE,
+                                    number_fmt = scales::comma)
+            )
+            
+        )
+    ) |> 
+    add_title(
+        title = reactablefmtr::html("Energy production in Mexico <img src='https://svgsilh.com/svg/146443.svg' alt='Bee' width='40' height='40'>"),
+        margin = reactablefmtr::margin(t=0,r=0,b=3,l=0)
+    ) |> 
+    add_subtitle(
+        subtitle = 'By power source. Values until 2020.',
+        font_weight = 'normal',
+        font_size = 20,
+        margin = reactablefmtr::margin(t=0,r=0,b=6,l=0)
+    ) |> 
+    add_source("Table created by: Jorge Hernández with {reactablefmtr}", font_size = 12)
 
 
