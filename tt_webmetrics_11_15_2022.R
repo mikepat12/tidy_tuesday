@@ -117,7 +117,7 @@ combined_percentiles %>%
 devtools::install_github('r-dbi/bigrquery')
 library(bigrquery)
 library(googlesheets4)
-gs4_auth_configure(api_key = "AIzaSyC1QB428xofLiSzllrZ1z1axhCFsXRu_iY") # do not run again
+gs4_auth_configure(api_key = '') # do not run again
 bq_auth(email = 'mikepat12@gmail.com')
 
 
