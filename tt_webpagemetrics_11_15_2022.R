@@ -153,4 +153,17 @@ btable <- tbl(con2, "games_wide")
 # Need new lines to get back up on github
 
 
+# This works to get table from google bigquery!!!
+test <- bq_project_query('big-query-test-377117', 
+                 'SELECT * FROM `bigquery-public-data.baseball.games_wide` LIMIT 10')
+x <- bq_table_download(test, n_max = 10)
+
+
+
+
+
+
+
+
+
 
