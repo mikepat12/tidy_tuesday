@@ -117,7 +117,7 @@ combined_percentiles %>%
 devtools::install_github('r-dbi/bigrquery')
 library(bigrquery)
 library(googlesheets4)
-gs4_auth_configure(api_key = '') # do not run again
+gs4_auth_configure(api_key = '') # do not run again. Find on bigquery
 bq_auth(email = 'mikepat12@gmail.com')
 
 
@@ -150,7 +150,7 @@ dbListTables(con2)
 btable <- tbl(con2, "games_wide")
 
 
-
+# Need new lines to get back up on github
 
 
 
